@@ -1,25 +1,29 @@
-import { forwardRef, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, { forwardRef, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence, useScroll, useSpring, useMotionValueEvent } from "framer-motion";
 import { toPng } from "html-to-image";
 import confetti from "canvas-confetti";
-import we from "/public/we.gif"
 
-/* ✏️ 여기만 수정하면 돼요 ------------------------------------ */
+/* ✏️ 설정 영역 ------------------------------------ */
 const TO = "우리 유미니에게 🤍";
 const DATE = "2026. 10. 06";
 const FROM = "이강휘 💛👃🕳️";
-const PHOTO = we
-const PHOTO_CAPTION = "";
-// 스크롤하면 문단이 하나씩 나오고 이전 글은 위로 쌓여요. **이렇게 감싸면** 형광펜 강조
+
+// public/we.gif 파일 경로 지정 (import 없이 문자열 경로 사용)
+const PHOTO = "/we.gif"; 
+const PHOTO_CAPTION = "지난 3년 야르렁 🎞️";
+
 const PARAGRAPHS = [
-  "오늘은 우리의 3주년이답. 1000일을 지난지도 벌써 100일이나 지났다니 좀 시간이 이렇게 빠르다니 싶으면서도 새로울 때가 있어 ! ",
+  "안뇽 유미나 오늘은 우리의 3주년!!!!! 추카포카해 🎊 1000일을 지난지도 벌써 100일이나 지났다니.. 진짜 빠르다 그치! 근데 한번씩 지난날을 되돌아보면 새롭게 느껴지는 날도 있는 것 같아 ㅎㅎ ",
+  "나랑 (인사교x 광인사o)에서부터 시작해서 지금까지의 시간들 어땠어?? 울 유미니 나랑 있을 때 더할나위 없었어? 생각해보니까 내가 턱 오른쪽에 털달고 오고 그런게 있어서 더할나위 있었겠지만..",
+  "나는 너무 행복했고 이런 시간들이 평생 계속 됐으면 좋겠다 생각할 뿐이야. 암튼 시드니를 울 유미니랑 행복하게 보내고 와서 여유도 생기니까? 이런 저런 여러 옛날 추억을 생각하는 것 같아.",
   "어제는 씻는데 갑자기 울 유미니가 예전에 썼던 편지가 궁금한거야? 그래서 작년 내 생일 때 써줬던 햄스터 편지도 읽고, 1000일 때 편지도 읽고 했거든 !",
   "근데 이제는 우리 유미니를 정말 잘 안다고 생각하는데도, 편지와 울 유미니의 평소 말하는 방식이 다른 느낌이 있는거야 ! ",
-  "나는 이제 늙어가는 건지 시간이 지나면서 뭔가 예전에 했던 추억들을 이야기하면 너무 즐겁고 재밌어서, 평소에 옛날 이야기를 많이 하는거 알지 걍 개 **늙크크**누 ㅋㅋ ",
+  "나는 이제 늙어가는 건지 시간이 지나면서 뭔가 예전에 했던 추억들을 이야기하면 너무 즐겁고 재밌어서, 평소에 옛날 이야기를 많이 하는거 알지",
+  " 걍 개 **늙크크**누 ㅋㅋ ",
   "암튼 나랑 반대로 울 유미니는 평소에는 이런 옛날 이야기를 잘안하는 것 같아",
   "나는 그렇게 느끼는데 갑자기 이렇게 적으니까 **아닌데?** 라고 할 것 같은 유미니구요 반박은 안받슴둥.",
-  "아무튼 편지를 읽으니까 예전에 내가 해준 것들을 생각하면서 예전 이야기들을 속마음과 함께 적혀있는 부분이 많은거야.",
-  "읽으면서, 당연히 직접 글을 적는거니까 다를 수 밖에 없는 것 같지만, 뭔가 나만 아는 울 유미니의 모습을 하나 더 추가한것 같아서 기분이 좋았어",
+  "아무튼 편지를 읽으니까 예전에 내가 해준 것들을 생각하면서 추억들을 속마음과 함께 적혀있는 부분이 많은거야.",
+  "읽으면서, 당연히 직접 글을 적는거니까 다를 수 밖에 없는 것 같지만, 뭔가 나만 아는 울 유미니의 모습을 하나 더 추가한것 같아서 기분이 좋았어 히히",
   "그래서 최근에 스트레칭도 하고 울 유미니랑 잼게 시간 보내서 잠도 푹 자고 나면? 낮에 일할 때도 울 유미니랑 카톡할 때도 기분이 좋고, 같이 점심에 산책나가서 전화하고 오면 오후 일에 집중도 잘돼서 너무 잘 끝나는 것 같아. ",
   "그래서 또 생각난게  **???: 오빠는 내가 왜 좋아?**  이 말을 들으면 내가 주로 하는 말 알지 ㅋㅋ",
   "나는 진짜 울 유미니 없으면 삶의 의미가 대부분 사라져버리는 것 같고, 있으면 너무 행복하고 불완전한 내가 완전해진다고 하는데, 진짜 그것만큼 정확하게 설명할 수가 없는 것 같아.",
@@ -33,15 +37,12 @@ const PARAGRAPHS = [
   "미래는 아무도 모르니까 두서없이 이것저것 적었는데 결론은 나는 울 유미니가 힘들어도 금방 이겨낼 수 있게 돕고 싶을 뿐이고 그냥 평생 늙어죽을 때까지 같이 살고 함께 하고 싶을 뿐이라는 것..!이라는 결론을 말하고 싶어서 적었구요",
   "ㅎㅎ 울 유미니 나랑 3년동안 지내니까 어땠어? 처음에 막 남자는 변한다 하는데 나는 그래도 안변한 부분이 있어? 이강휘는 말로 안해 ^^",
   "아무튼 울 유미니 나랑 3주년 축하하고 100주년까지 97년 남았으니까 꼭 함께 하쟈 🩷🩷"
-
 ];
+
 /* ------------------------------------------------------------- */
-
-
 const N = PARAGRAPHS.length;
 const COLORS = ["#ff8fb1", "#ffe9a8", "#cdf3e4", "#c9d6ff"];
 
-// 구간 선형 보간 (범위 밖은 양 끝값 고정)
 function interp(x, xs, ys) {
   if (x <= xs[0]) return ys[0];
   for (let i = 1; i < xs.length; i++) {
@@ -52,30 +53,60 @@ function interp(x, xs, ys) {
   }
   return ys[ys.length - 1];
 }
+
 const rich = (text) =>
   text.split("**").map((s, i) => (i % 2 ? <b key={i} className="hl">{s}</b> : <span key={i}>{s}</span>));
 
-const Polaroid = ({ className = "" }) => (
-  <div className={`photo ${className}`}>
-    <div className="img">{PHOTO ? <img src={PHOTO} alt="" /> : "🎞️ GIF를 넣어주세요"}</div>
-    <small>{PHOTO_CAPTION}</small>
+/* 📸 3:4 원본 비율 적용 및 크기가 커진 폴라로이드 컴포넌트 */
+const Polaroid = ({ style = {}, className = "" }) => (
+  <div
+    className={`photo ${className}`}
+    style={{
+      background: "#ffffff",
+      padding: "16px 16px 24px 16px",
+      borderRadius: "16px",
+      boxShadow: "0 12px 28px rgba(0,0,0,0.12)",
+      border: "1px solid rgba(0,0,0,0.06)",
+      display: "inline-block",
+      textAlign: "center",
+      ...style,
+    }}
+  >
+    <div
+      style={{
+        width: "100%",
+        aspectRatio: "3 / 4", // 3:4 비율 고정
+        borderRadius: "10px",
+        overflow: "hidden",
+        background: "#f0f0f0",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {PHOTO ? (
+        <img
+          src={PHOTO}
+          alt=""
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        />
+      ) : (
+        "🎞️ GIF를 넣어주세요"
+      )}
+    </div>
+    <small
+      style={{
+        display: "block",
+        marginTop: "12px",
+        fontSize: "18px",
+        fontWeight: "bold",
+        color: "#555",
+      }}
+    >
+      {PHOTO_CAPTION}
+    </small>
   </div>
 );
-
-/* PNG 저장용: 화면 밖에 있는 완성본 편지 (스크롤 상태와 무관하게 항상 전체가 담겨요) */
-const ExportLetter = forwardRef((_, ref) => (
-  <div className="export-wrap" aria-hidden>
-    <div ref={ref} className="letter" style={{ width: 440 }}>
-      <div className="tape" />
-      <h1 className="to"><span>{TO}</span></h1>
-      <div className="date">{DATE}</div>
-      {PARAGRAPHS.map((t, i) => <p key={i} className="p">{rich(t)}</p>)}
-      <Polaroid />
-      <div className="sign">from.<br /><strong>{FROM}</strong></div>
-    </div>
-  </div>
-));
-
 
 const FLOATERS = ["💗", "✨", "🌸", "⭐", "🫧", "🍓", "☁️", "🎀"];
 
@@ -105,8 +136,7 @@ function Floaters() {
   ));
 }
 
-
-/* 💌 진입 화면: 봉투의 하트 씰을 누르면 열려요 */
+/* 💌 진입 화면 */
 function Intro({ onDone }) {
   const [open, setOpen] = useState(false);
   const go = () => {
@@ -152,8 +182,135 @@ function Intro({ onDone }) {
   );
 }
 
+/* 🖼️ 단일 4K/3:4 비율 4분할 편지 포스터 (PNG 저장용) */
+const ExportLetterSingle = forwardRef(({ paragraphs }, ref) => {
+  const columns = useMemo(() => {
+    const total = paragraphs.length;
+    const perCol = Math.ceil(total / 4);
+    const result = [];
+    for (let i = 0; i < 4; i++) {
+      result.push(paragraphs.slice(i * perCol, (i + 1) * perCol));
+    }
+    return result;
+  }, [paragraphs]);
 
-/* 📜 스크롤 리더: 지난 글은 위로 쌓이며 작아지고, 새 글이 아래에서 올라와요 */
+  return (
+    <div className="export-wrap" aria-hidden style={{ position: "fixed", left: "-9999px", top: "-9999px" }}>
+      <div
+        ref={ref}
+        style={{
+          width: 1800,
+          height: 2400,
+          padding: "80px",
+          boxSizing: "border-box",
+          background: "#ffffff",
+          fontFamily: "sans-serif",
+          color: "#222",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          position: "relative",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            inset: "40px",
+            border: "3px dashed rgba(255, 143, 177, 0.5)",
+            borderRadius: "32px",
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* 상단 헤더 */}
+        <div style={{ position: "relative", zIndex: 2, textAlign: "center", marginTop: "20px" }}>
+          <div
+            style={{
+              margin: "0 auto 24px auto",
+              width: 180,
+              height: 40,
+              background: "rgba(255, 143, 177, 0.35)",
+              borderRadius: "8px",
+            }}
+          />
+          <h1 style={{ fontSize: "52px", fontWeight: "bold", margin: 0 }}>
+            <span style={{ borderBottom: "5px solid #ff8fb1", paddingBottom: "6px" }}>{TO}</span>
+          </h1>
+          <div style={{ fontSize: "28px", color: "#888", marginTop: "16px" }}>{DATE}</div>
+        </div>
+
+        {/* 본문 4열 분할 레이아웃 */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: "32px",
+            margin: "30px 0",
+            zIndex: 2,
+            alignItems: "start",
+          }}
+        >
+          {columns.map((colParagraphs, colIdx) => (
+            <div
+              key={colIdx}
+              style={{
+                background: "rgba(248, 249, 255, 0.8)",
+                border: "2px solid rgba(201, 214, 255, 0.6)",
+                borderRadius: "20px",
+                padding: "26px 22px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "18px",
+                boxShadow: "0 10px 20px rgba(0,0,0,0.03)",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "18px",
+                  fontWeight: "bold",
+                  color: "#ff8fb1",
+                  borderBottom: "1px dashed #ffd1dc",
+                  paddingBottom: "8px",
+                }}
+              >
+                Part {colIdx + 1}
+              </div>
+              {colParagraphs.map((text, i) => (
+                <p key={i} style={{ fontSize: "20px", lineHeight: "1.7", margin: 0, wordBreak: "keep-all" }}>
+                  {rich(text)}
+                </p>
+              ))}
+            </div>
+          ))}
+        </div>
+
+        {/* 하단 푸터: 더 큼직해진 3:4 비율 폴라로이드 */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
+            zIndex: 2,
+            marginBottom: "20px",
+            padding: "0 20px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "flex-end", gap: "24px" }}>
+            <Polaroid style={{ width: "320px" }} />
+            <span style={{ fontSize: "44px", marginBottom: "20px" }}>💌✨</span>
+          </div>
+
+          <div style={{ textAlign: "right", fontSize: "32px", color: "#444" }}>
+            from.<br />
+            <strong style={{ fontSize: "48px", color: "#000" }}>{FROM}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+/* 📜 스크롤 리더 및 저장 기능 */
 function Reader() {
   const scrollerRef = useRef(null);
   const zoneRef = useRef(null);
@@ -177,7 +334,7 @@ function Reader() {
     return () => ro.disconnect();
   }, []);
 
-  const pos = p * N;               // 0 → 첫 문단, N-1 → 마지막 문단, N → 피날레
+  const pos = p * N;
   const finale = pos > N - 0.35;
   useEffect(() => {
     if (!finale) return;
@@ -192,11 +349,17 @@ function Reader() {
     if (!exportRef.current || saving) return;
     setSaving(true);
     try {
-      const url = await toPng(exportRef.current, { pixelRatio: 2, cacheBust: true, backgroundColor: "#dfe6ff" });
+      const url = await toPng(exportRef.current, {
+        pixelRatio: 2,
+        cacheBust: true,
+        backgroundColor: "#ffffff",
+      });
+
       const a = document.createElement("a");
-      a.download = "love-letter.png";
+      a.download = "love-letter-3rd-anniversary.png";
       a.href = url;
       a.click();
+
       confetti({ particleCount: 120, spread: 80, origin: { y: 0.85 }, scalar: 1.1, colors: COLORS });
     } catch (e) {
       alert("저장에 실패했어요 😢 다시 시도해주세요");
@@ -205,6 +368,7 @@ function Reader() {
       setSaving(false);
     }
   };
+
   const replay = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
@@ -243,10 +407,14 @@ function Reader() {
               <AnimatePresence>
                 {finale && (
                   <motion.div key="finale" className="finale" exit={{ opacity: 0, scale: 0.8 }}>
-                    <motion.div initial={{ scale: 0.3, rotate: 14, opacity: 0, y: 60 }}
+                    <motion.div 
+                      initial={{ scale: 0.3, rotate: 14, opacity: 0, y: 60 }}
                       animate={{ scale: 1, rotate: 0, opacity: 1, y: 0 }}
-                      transition={{ type: "spring", stiffness: 140, damping: 11 }}>
-                      <Polaroid className="stage-photo" />
+                      transition={{ type: "spring", stiffness: 140, damping: 11 }}
+                      style={{ width: "100%", display: "flex", justifyContent: "center" }}
+                    >
+                      {/* 편지 카드 폭의 80% 수준으로 크기 확대 */}
+                      <Polaroid style={{ width: "80%", maxWidth: "360px" }} />
                     </motion.div>
                     <motion.div className="sign" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.8 }}>
@@ -264,13 +432,14 @@ function Reader() {
 
           <div className="actions" style={{ opacity: finale ? 1 : 0, pointerEvents: finale ? "auto" : "none" }}>
             <motion.button className="btn" onClick={save} disabled={saving} whileTap={{ scale: 0.97 }}>
-              {saving ? "저장하는 중… ✨" : "💌 편지 이미지로 저장하기"}
+              {saving ? "저장하는 중… ✨" : "💌 편지 포스터(1장)로 저장하기"}
             </motion.button>
             <button className="link" onClick={replay}>↺ 처음부터 다시 읽기</button>
           </div>
         </div>
       </div>
-      <ExportLetter ref={exportRef} />
+
+      <ExportLetterSingle ref={exportRef} paragraphs={PARAGRAPHS} />
     </>
   );
 }
